@@ -95,3 +95,12 @@ ENV/
 .ropeproject
 
 # End of https://www.gitignore.io/api/python
+
+
+
+# sublime text files
+*.sublime-project
+*.sublime-workspace
+
+# halite game files
+*.hlt
