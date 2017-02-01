@@ -1,3 +1,3 @@
-# HALlite_9000
+# HALite_9000
 
 https://halite.io/
