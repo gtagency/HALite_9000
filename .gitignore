@@ -104,3 +104,6 @@ ENV/
 
 # halite game files
 *.hlt
+
+# PyCharm files
+.idea/*
