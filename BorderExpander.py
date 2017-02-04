@@ -32,19 +32,23 @@ def manhattan_dist(s0, s1):
     return abs(s1.y - s0.y) + abs(s1.x - s0.x)
 
 def closest_dist_version(s0, s1):
-    offset_x = (0, game_map.width, -game_map.width)
-    offset_y = (0, game_map.height, -game_map.height)
-    versions = []
-    for dx in offset_x:
-        for dy in offset_y:
-            versions.append(hlt.Square(s1.x+dx, s1.y+dy, None, None, None))
-    return min(versions, key=lambda x: manhattan_dist(s0, x))
+    out_y = s1.y
+    out_x = s1.x
+    if s1.y > s0.y + game_map.height/2:
+        out_y -= game_map.height
+    elif s1.y < s0.y - game_map.height/2:
+        out_y += game_map.height
+    if s1.x > s0.x + game_map.width/2:
+        out_x -= game_map.width
+    elif s1.x < s0.x - game_map.width/2:
+        out_x += game_map.width
+    return hlt.Square(out_x, out_y, None, None, None)
 
 def get_neighbors(square):
     dirs = ((1,0), (0,1), (-1,0), (0,-1))
     for dx, dy in dirs:
-        y = (square.y + dy) % game_map.width
-        x = (square.x + dx) % game_map.height
+        y = (square.y + dy) % game_map.height
+        x = (square.x + dx) % game_map.width
         yield game_map.contents[y][x]
 
 def get_new_border():
