@@ -106,4 +106,7 @@ ENV/
 *.hlt
 
 # PyCharm files
-.idea/*
+.idea/
+
+# debug logs
+logs/

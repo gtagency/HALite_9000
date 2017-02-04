@@ -1,22 +1,24 @@
 import hlt
-import random
 
 def log(file, data):
     with open("logs/" + file, 'w') as f:
         f.write(data)
 
+
 def move_toward(s0, s1):
+    # shift position of s1 to wrap around board edges
+    s1 = closest_dist_version(s0, s1)
+
     if abs(s1.y-s0.y) >= abs(s1.x-s0.x):
         if s1.y >= s0.y:
-            movecode = hlt.SOUTH
+            return hlt.Move(s0, hlt.SOUTH)
         else:
-            movecode = hlt.NORTH
+            return hlt.Move(s0, hlt.NORTH)
     else:
         if s1.x >= s0.x:
-            movecode = hlt.EAST
+            return hlt.Move(s0, hlt.EAST)
         else:
-            movecode = hlt.WEST
-    return hlt.Move(s0, movecode)
+            return hlt.Move(s0, hlt.WEST)
 
 def can_take(s0, s1):
     return s1.owner != myID and s0.strength > s1.strength
@@ -26,33 +28,41 @@ def desirability(square):
         return 255
     return square.production / square.strength
 
-def get_all_manhattan(square, dist):
+def manhattan_dist(s0, s1):
+    return abs(s1.y - s0.y) + abs(s1.x - s0.x)
+
+def closest_dist_version(s0, s1):
+    offset_x = (0, game_map.width, -game_map.width)
+    offset_y = (0, game_map.height, -game_map.height)
+    versions = []
+    for dx in offset_x:
+        for dy in offset_y:
+            versions.append(hlt.Square(s1.x+dx, s1.y+dy, None, None, None))
+    return min(versions, key=lambda x: manhattan_dist(s0, x))
+
+def get_neighbors(square):
+    dirs = ((1,0), (0,1), (-1,0), (0,-1))
+    for dx, dy in dirs:
+        y = (square.y + dy) % game_map.width
+        x = (square.x + dx) % game_map.height
+        yield game_map.contents[y][x]
+
+def get_new_border():
     out = set()
-    for n in range(-dist, dist+1):
-        x = (square.x + n) % game_map.width
-        y1 = (square.y + dist - abs(n)) % game_map.height
-        y2 = (square.y - dist + abs(n)) % game_map.height
-        out.add(game_map.contents[y1][x])
-        out.add(game_map.contents[y2][x])
-        log("manhattan.txt", ", ".join(str((s.y, s.x)) for s in out))
+    for square in filter(lambda s: s.owner == myID, game_map):
+        for possible_border in filter(lambda s: s.owner != myID, get_neighbors(square)):
+            out.add(possible_border)
     return tuple(out)
 
 def expansion_target(square):
-    dist = 0
-    found = []
-    while not found:
-        dist += 1
-        found = [
-            sq for sq in get_all_manhattan(square, dist) if sq.owner != myID
-        ]
-    return max(found, key=desirability), dist
+    return min(border_list, key=lambda sq: manhattan_dist(square, closest_dist_version(square, sq)))
 
 def get_move(square):
-    if square.strength < 5 * square.production:
+    if square.strength < 3 * square.production + 1:
         return hlt.Move(square, hlt.STILL)
 
-    target, dist = expansion_target(square)
-    if dist > 1 or can_take(square, target):
+    target = expansion_target(square)
+    if target not in get_neighbors(square) or can_take(square, target):
         return move_toward(square, target)
     else:
         return hlt.Move(square, hlt.STILL)
@@ -63,6 +73,7 @@ hlt.send_init("BorderExpander")
 
 while True:
     game_map.get_frame()
+    border_list = get_new_border()
     moves = [get_move(s) for s in game_map if s.owner == myID]
     hlt.send_frame(moves)
 
