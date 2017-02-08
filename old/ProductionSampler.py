@@ -1,5 +1,7 @@
-import hlt
 import random
+
+from src import hlt
+
 
 def log(file, data):
     with open("logs/" + file, 'w') as f:
@@ -50,17 +52,17 @@ def get_move(square, index):
     return hlt.Move(square, movecode)
 
 
+if __name__ == '__main__':
+    myID, game_map = hlt.get_init()
+    hlt.send_init("ProductionSampler")
 
-myID, game_map = hlt.get_init()
-hlt.send_init("ProductionSampler")
+    production_1D = []
+    for row in game_map.production:
+        production_1D += row
+    production_1D = tuple(enumerate(production_1D))
 
-production_1D = []
-for row in game_map.production:
-    production_1D += row
-production_1D = tuple(enumerate(production_1D))
-
-while True:
-    game_map.get_frame()
-    moves = [get_move(s, i) for i, s in enumerate(game_map) if s.owner == myID]
-    hlt.send_frame(moves)
+    while True:
+        game_map.get_frame()
+        moves = [get_move(s, i) for i, s in enumerate(game_map) if s.owner == myID]
+        hlt.send_frame(moves)
 
