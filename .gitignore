@@ -1,3 +1,10 @@
+### HALITE SPECIFIC ###
+*.hlt
+*.log
+
+### JAVA STUFF FOR THE JAVA BOTS ###
+*.class
+
 
 # Created by https://www.gitignore.io/api/python
 
