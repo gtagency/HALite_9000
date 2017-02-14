@@ -4,7 +4,7 @@ import random
 
 
 myID, game_map = hlt.get_init()
-hlt.send_init("MyPythonBot")
+hlt.send_init("XuranBot")
 
 def assign_move(square):
     for direction, neighbor in enumerate(game_map.neighbors(square)):
