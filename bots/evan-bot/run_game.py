@@ -9,9 +9,7 @@ if len(sys.argv) < 2:
     print("Specify at least one python file")
     exit()
 
-program_names = []
-for arg in sys.argv[1:]:
-    program_names.append(arg if arg[-3:] == '.py' else (arg + '.py'))
+program_names = sys.argv[1:]
 
 cmdstr = ' '.join([
     os.path.join(os.curdir, "halite"),
