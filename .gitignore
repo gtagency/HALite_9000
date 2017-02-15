@@ -111,9 +111,11 @@ ENV/
 
 # halite game files
 *.hlt
+*/*.hlt
 
 # PyCharm files
 .idea/
 
 # debug logs
 logs/
+*/logs/
