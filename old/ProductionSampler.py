@@ -1,6 +1,6 @@
 import random
 
-from src import hlt
+import hlt
 
 
 def log(file, data):
