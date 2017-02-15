@@ -19,11 +19,23 @@ public class MyBot {
         Direction.NORTH,
         Direction.STILL
         };
-        Networking.sendInit("MyJavaBot6");
+        int numb = 0;
+        for (int y = 0; y < gameMap.height; y++) {
+            for (int x = 0; x < gameMap.width; x++) {
+                numb+=gameMap.getLocation(x, y).getSite().strength;
+            }
+        }
+        numb/=(gameMap.width*gameMap.height*5);
+        int time = gameMap.width*gameMap.height/5;
+        Networking.sendInit("MyJavaBot4");
 
         int myX = -1;
         int myY = -1;
+        int count = 0;
         while(true) {
+            count++;
+            if(count%time==0)
+                numb++;
             List<Move> moves = new ArrayList<Move>();
             
             Networking.updateFrame(gameMap);
@@ -42,7 +54,7 @@ public class MyBot {
                                     scores[x][y] = 256-side.strength;
                         }
                     }
-                    else if(site.owner != 0)
+                    else if(site.strength < numb)
                         list.add(new Integer[]{x,y});
                     if(scores[x][y]>0)
                     {
@@ -58,7 +70,7 @@ public class MyBot {
                         if(scores[x][y]==0)
                         {
                             int[] vals = getMin(x,y,list,gameMap.height,gameMap.width);
-                            if(site.strength > 1 && vals[0]+vals[1]+site.strength >= 30)
+                            if(site.strength > 1 && vals[0]+vals[1]+site.strength >= numb+5)
                             {
                                 if(Math.abs(vals[0])>Math.abs(vals[1]))
                                 {
