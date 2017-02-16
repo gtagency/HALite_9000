@@ -3,12 +3,15 @@ import subprocess
 import time
 import random
 import numpy as np
-from keras.models import Sequential, model_from_json
+from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
-from keras.optimizers import RMSprop
+from keras.optimizers import SGD
 
-lookout_dist = 1
-n_games = 10
+lookout_dist = 3
+n_games = 20
+batch_size = 30
+n_simulations = 50
+n_epochs = 10
 """
 input format: (2n+1)^2 inputs for each of ownership, production, and strength
 """
@@ -17,9 +20,10 @@ def run_training_game(i, json_file, weights_file):
     print("starting training game %d" % i)
     name0 = "keras%d_0" % i
     name1 = "keras%d_1" % i
-    retval = subprocess.run(["python3", "run_game.py",
+    retval = subprocess.run(["python3", "run_training_game.py",
                              "KerasPlayerHltWrapper.py %s %s %s %d" % (name0, json_file, weights_file, lookout_dist),
                              "KerasPlayerHltWrapper.py %s %s %s %d" % (name1, json_file, weights_file, lookout_dist),
+                             "BorderExpander.py"
                             ],
                             stdout=subprocess.PIPE)
     print("finished training game %d" % i)
@@ -27,8 +31,8 @@ def run_training_game(i, json_file, weights_file):
     # print("returned lines: " + str(lines))
 
     res0, res1 = lines[4:6]
-    print(res0)
-    print(res1)
+    # print(res0)
+    # print(res1)
     pos0 = res0.split()[1]
     pos1 = res1.split()[1]
     winner = name0 if pos0 < pos1 else name1
@@ -67,6 +71,14 @@ def run_training_game(i, json_file, weights_file):
     return np.array(X), np.array(Y)
 
 
+def get_game_data(x):
+    time.sleep(4.0 * x)
+    weights_file = "model/weights_%d.h5" % x
+    json_file = "model/model_%d.json" % x
+    with open(json_file, 'w') as f:
+        f.write(model.to_json())
+    model.save_weights(weights_file)
+    return run_training_game(x, json_file, weights_file)
 
 
 if __name__ == '__main__':
@@ -89,18 +101,23 @@ if __name__ == '__main__':
     model.add(Activation('softmax'))
 
     model.compile(loss='mean_squared_error',
-                  optimizer=RMSprop(lr=0.001),
+                  optimizer=SGD(lr=0.01),
                   metrics=['accuracy'])
 
-    def get_game_data(x):
-        weights_file = "model/weights_%d.h5" % x
-        json_file = "model/model_%d.json" % x
-        with open(json_file, 'w') as f:
-            f.write(model.to_json())
-        model.save_weights(weights_file)
-        return run_training_game(x, json_file, weights_file)
+    pool = multiprocessing.Pool(processes=n_games)
 
-    pool = multiprocessing.Pool(processes=2)
-    XY_list = pool.map(get_game_data, range(2))
-    print(XY_list[0][0].shape)
-    print(XY_list[0][1].shape)
+    for epoch in range(n_simulations):
+        XY_list = pool.map(get_game_data, range(n_games))
+
+        X = np.vstack(test_xy[0] for test_xy in XY_list)
+        Y = np.vstack(test_xy[1] for test_xy in XY_list)
+        X_train, X_test = np.vsplit(X, (int(X.shape[0] * 0.9),))
+        Y_train, Y_test = np.vsplit(Y, (int(Y.shape[0] * 0.9),))
+
+        history = model.fit(X_train, Y_train,
+                            batch_size=batch_size, nb_epoch=n_epochs,
+                            verbose=1, validation_data=(X_test, Y_test))
+
+        score = model.evaluate(X_test, Y_test, verbose=0)
+        print('Test score:', score[0])
+        print('Test accuracy:', score[1])
