@@ -12,13 +12,13 @@ input format: (2n+1)^2 inputs for each of ownership, strength, and production
 """
 
 def run_training_game(i, json_file, weights_file):
-    print("starting %d" % i)
+    print("starting training game %d" % i)
     retval = subprocess.run(["python3", "run_game.py",
-                             "KerasPlayerHltWrapper.py %d %s %s %d" % (0, json_file, weights_file, lookout_dist),
-                             "KerasPlayerHltWrapper.py %d %s %s %d" % (1, json_file, weights_file, lookout_dist),
-                             ],
+                             "KerasPlayerHltWrapper.py %s %s %s %d" % ("keras0", json_file, weights_file, lookout_dist),
+                             "KerasPlayerHltWrapper.py %s %s %s %d" % ("keras1", json_file, weights_file, lookout_dist),
+                            ],
                             stdout=subprocess.PIPE)
-    print("finished %d" % i)
+    print("finished training game %d" % i)
     return retval.stdout.decode('utf-8')
 
 

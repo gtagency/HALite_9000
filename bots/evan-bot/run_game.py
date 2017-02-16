@@ -13,8 +13,8 @@ program_names = sys.argv[1:]
 
 cmdstr = ' '.join([
     os.path.join(os.curdir, "halite"),
-    '-d',
-    '"%d %d"' % (size1, size2),
+    '-q',
+    '-d', '"%d %d"' % (size1, size2),
     ' '.join(['"python3 %s"' % pn for pn in program_names])
 ])
 
