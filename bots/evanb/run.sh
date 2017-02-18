@@ -1,2 +1,2 @@
-cd ../bots/evan-bot
+cd ../bots/evanb
 python3 BorderExpander.py

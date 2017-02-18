@@ -116,6 +116,7 @@ ENV/
 # PyCharm files
 .idea/
 
-# debug logs
-logs/
-*/logs/
+
+bots/evanb/model/
+bots/evanb/logs/
+bots/evanb/train/

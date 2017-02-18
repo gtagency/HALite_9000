@@ -1,6 +1,6 @@
 import sys
 import pexpect
-import hlt
+from .. import hlt
 import time
 from itertools import product, chain
 
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     child = pexpect.spawn(' '.join(cmds))
 
     myID, game_map = hlt.get_init()
-    time.sleep(1.0)
+    time.sleep(2.0)
     hlt.send_init(hlt_player_id)
 
     train_data_file = "train/%s.txt" % hlt_player_id

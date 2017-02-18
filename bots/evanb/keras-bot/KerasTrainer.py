@@ -1,7 +1,7 @@
 import multiprocessing
 import subprocess
 import time
-import random
+import os
 import numpy as np
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
@@ -20,7 +20,7 @@ def run_training_game(i, json_file, weights_file):
     print("starting training game %d" % i)
     name0 = "keras%d_0" % i
     name1 = "keras%d_1" % i
-    retval = subprocess.run(["python3", "run_training_game.py",
+    retval = subprocess.run(["python3", "KerasRunTrainingGame.py",
                              "KerasPlayerHltWrapper.py %s %s %s %d" % (name0, json_file, weights_file, lookout_dist),
                              "KerasPlayerHltWrapper.py %s %s %s %d" % (name1, json_file, weights_file, lookout_dist),
                              "BorderExpander.py"
@@ -72,7 +72,7 @@ def run_training_game(i, json_file, weights_file):
 
 
 def get_game_data(x):
-    time.sleep(4.0 * x)
+    time.sleep(2.0 * (x%4))
     weights_file = "model/weights_%d.h5" % x
     json_file = "model/model_%d.json" % x
     with open(json_file, 'w') as f:
@@ -82,6 +82,7 @@ def get_game_data(x):
 
 
 if __name__ == '__main__':
+    os.chdir(__file__)
     input_size = pow((2 * lookout_dist) + 1, 2) * 3
 
     model = Sequential()
@@ -104,7 +105,7 @@ if __name__ == '__main__':
                   optimizer=SGD(lr=0.01),
                   metrics=['accuracy'])
 
-    pool = multiprocessing.Pool(processes=n_games)
+    pool = multiprocessing.Pool(processes=4)
 
     for epoch in range(n_simulations):
         XY_list = pool.map(get_game_data, range(n_games))
