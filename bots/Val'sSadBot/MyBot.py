@@ -30,23 +30,24 @@ def heuristic(square):
 
 def get_move(square):
     target, direction = max(((neighbor, direction) for direction, neighbor in enumerate(game_map.neighbors(square))
-                             if neighbor.owner != myID),
-                            default = (None, None),
-                            key = lambda t: heuristic(t[0]))
-                            if target is not None and target.strength < square.strength:
-                                return Move(square, direction)
-                            elif square.strength < square.production * 5:
-                                return Move(square, STILL)
+    if neighbor.owner != myID),
+        default = (None, None),
+        key = lambda t: heuristic(t[0]))
+    if target is not None and target.strength < square.strength:
+        return Move(square, direction)
+    elif square.strength < square.production * 5:
+        return Move(square, STILL)
 
-border = any(neighbor.owner != myID for neighbor in game_map.neighbors(square))
+    border = any(neighbor.owner != myID for neighbor in game_map.neighbors(square))
     if not border:
         return Move(square, find_nearest_enemy_direction(square))
-else:
-    #wait until we are strong enough to attack
-    return Move(square, STILL)
+    else:
+        #wait until we are strong enough to attack
+        return Move(square, STILL)
 
 
 while True:
     game_map.get_frame()
     moves = [get_move(square) for square in game_map if square.owner == myID]
     hlt.send_frame(moves)
+
