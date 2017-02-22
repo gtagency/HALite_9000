@@ -60,7 +60,9 @@ def run_test(vec1, vec2, vec3, counter=0):
         print('ran bad game')
         return vec1, vec2, vec3
     if counter % match_save_rate != 0:
-        os.remove(lines[4].split()[0])
+        logfile = lines[4].split()[0]
+        if logfile in os.listdir():
+            os.remove(logfile)
 
     positions = tuple(int(line.split()[1]) for line in lines[5:8])
     vecs_positions = zip((vec1, vec2, vec3), positions)
