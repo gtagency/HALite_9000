@@ -1,6 +1,6 @@
 import sys
 import pexpect
-from .. import hlt
+import hlt
 import time
 from itertools import product, chain
 
