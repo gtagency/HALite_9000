@@ -8,7 +8,7 @@ import collections
 from GenAlgPlayer import N_GENOME_BITS
 
 mutation_rate = 0.007
-population = 20
+population = 12
 field_size = 15
 match_save_rate = 50
 
@@ -72,8 +72,16 @@ def run_test(vec1, vec2, vec3, counter=0):
 
 class GenAlgTrainer:
     def __init__(self):
-        self.vecs = [rand_vec() for _ in range(population)]
+        self.vecs = [rand_vec() for _ in range(population-1)]
         self.pool = multiprocessing.Pool(processes=3)
+        if os.path.exists(best_genome_path):
+            with open(best_genome_path, 'r') as f:
+                prev_best = f.read()
+        if len(prev_best) == N_GENOME_BITS:
+            self.vecs.append(prev_best)
+            print("loaded previous best genome")
+        else:
+            self.vecs.append(rand_vec())
 
     def calc_end_fitnesses(self):
         random.shuffle(self.vecs)
@@ -117,7 +125,7 @@ class GenAlgTrainer:
         self.vecs.append(child)
 
 if __name__ == '__main__':
-    print("number of genome bits = " + str(N_GENOME_BITS))
+    print("number of genome bits =", N_GENOME_BITS)
 
     # train strategies
     trainer = GenAlgTrainer()

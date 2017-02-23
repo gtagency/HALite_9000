@@ -3,13 +3,13 @@ import numpy as np
 import hlt
 import itertools
 
-LOOKOUT_DIST = 2
+LOOKOUT_DIST = 3
 INPUT_SIZE = (((2 * LOOKOUT_DIST) + 1) ** 2) * 3
-HIDDEN_LAYER_SIZES = (40,20)
+HIDDEN_LAYER_SIZES = (50,)
 
 # float encoding parameters
 FLOAT_BITS_EXP = 3
-FLOAT_BITS_SIGNIFICAND = 20
+FLOAT_BITS_SIGNIFICAND = 12
 FLOAT_BITS = 1 + FLOAT_BITS_EXP + FLOAT_BITS_SIGNIFICAND
 
 N_WEIGHTS = INPUT_SIZE*HIDDEN_LAYER_SIZES[0] \
@@ -58,13 +58,15 @@ def softmax(y):
 
 
 def feed_forward(X, w_list, b_list):
-    X2 = np.array(X)
+    prev = np.array(X)
+    # print(X.shape, len(w_list), len(b_list))
     for l in range(len(HIDDEN_LAYER_SIZES)):
-        X2 = sigmoid(np.matmul(X2, w_list[l]) + b_list[l])
+        next = sigmoid(np.matmul(prev, w_list[l]) + b_list[l])
+        prev = np.array(next)
 
     y = []
-    for i in range(X2.shape[0]):
-        raw_out = np.matmul(X2[i], w_list[-1]) + b_list[-1]
+    for i in range(prev.shape[0]):
+        raw_out = np.matmul(prev[i], w_list[-1]) + b_list[-1]
         y.append(softmax(raw_out))
     return y
 
