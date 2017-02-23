@@ -1,5 +1,6 @@
 import random
 import os
+import sys
 import numpy as np
 import subprocess
 import multiprocessing
@@ -7,14 +8,16 @@ import itertools
 import collections
 from GenAlgPlayer import N_GENOME_BITS
 
-mutation_rate = 0.007
-population = 12
+mutation_rate = 0.005
+population = 15  // 3 * 3 #multiple of 3
 field_size = 15
-match_save_rate = 50
+match_save_rate = 25
 
 halite_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'halite'))
 player_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'GenAlgPlayer.py'))
-best_genome_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'best-genome.txt'))
+best_genome_path = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '%d.genome' % N_GENOME_BITS)
+)
 log_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'logs'))
 
 
@@ -44,7 +47,7 @@ def save_genome(path, genome_str):
         f.write(genome_str)
 
 def genome_name(vec):
-    return ''.join(vec[int(i)] for i in np.linspace(0, len(vec), 18)[1:-1])
+    return ''.join(vec[int(i)] for i in np.linspace(0, len(vec), 16+2)[1:-1])
 
 
 def run_test(vec1, vec2, vec3, counter=0):
@@ -53,7 +56,7 @@ def run_test(vec1, vec2, vec3, counter=0):
     os.chdir(log_path)
     # print(programs[0].split()[:3])
     response = subprocess.run([halite_path, '-q', '-d', '%d %d' % (field_size, field_size)]
-                                + programs,
+                              + programs,
                               stdout=subprocess.PIPE)
     lines = response.stdout.decode('utf-8').split(os.linesep)
     if lines[9] != ' ':
@@ -72,24 +75,24 @@ def run_test(vec1, vec2, vec3, counter=0):
 
 class GenAlgTrainer:
     def __init__(self):
-        self.vecs = [rand_vec() for _ in range(population-1)]
-        self.pool = multiprocessing.Pool(processes=3)
+        self.vecs = []
         if os.path.exists(best_genome_path):
             with open(best_genome_path, 'r') as f:
                 prev_best = f.read()
-        if len(prev_best) == N_GENOME_BITS:
-            self.vecs.append(prev_best)
-            print("loaded previous best genome")
-        else:
+                if len(prev_best) == N_GENOME_BITS:
+                    self.vecs = [prev_best] * (population // 2)
+                    print("loaded previous best genome")
+        while len(self.vecs) < population:
             self.vecs.append(rand_vec())
 
-    def calc_end_fitnesses(self):
+        self.pool = multiprocessing.Pool(processes=3)
+
+    def save_best_fitnesses(self):
         random.shuffle(self.vecs)
         win_counter = collections.Counter()
         games_counter = collections.Counter()
-        rand_genome = rand_vec()
         for a, b in itertools.combinations(self.vecs, 2):
-            ordered = run_test(a, b, rand_genome)
+            ordered = run_test(a, b, rand_vec())
             win_counter.update((ordered[0],))
             games_counter.update(ordered[:3])
         vec, wins = win_counter.most_common(1)[0]
@@ -99,10 +102,10 @@ class GenAlgTrainer:
             f.write(vec)
         print("wrote best genome to", best_genome_path)
 
-
     def train(self, n_generations):
         counter = 0
-        for gen in range(n_generations):
+        for gen in range(n_generations+1):
+            sys.stdout.writelines("\rGeneration %d / %d" % (gen, n_generations))
             random.shuffle(self.vecs)
             inputs = []
             for i in range(0, population-2, 3):
@@ -113,9 +116,7 @@ class GenAlgTrainer:
             results = self.pool.starmap(run_test, inputs)
             for ordered_list in results:
                 self.process_test(ordered_list)
-
-            if gen % 20 == 0:
-                print("finished generation", gen)
+        print()  # send newline
 
     def process_test(self, ordered_vecs):
         parents = [ordered_vecs[0], ordered_vecs[1]]
@@ -124,12 +125,20 @@ class GenAlgTrainer:
         self.vecs.remove(ordered_vecs[2])
         self.vecs.append(child)
 
+
 if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print("Pass in a number of training iterations")
+        exit()
+
+    train_iterations = int(sys.argv[1])
+
     print("number of genome bits =", N_GENOME_BITS)
+    print("average mutations =", N_GENOME_BITS*mutation_rate)
 
     # train strategies
     trainer = GenAlgTrainer()
-    trainer.train(100)
+    trainer.train(train_iterations)
 
     print("final ranking of strategies...")
-    trainer.calc_end_fitnesses()
+    trainer.save_best_fitnesses()
