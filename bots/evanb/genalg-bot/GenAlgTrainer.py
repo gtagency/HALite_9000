@@ -8,9 +8,9 @@ import itertools
 import collections
 from GenAlgPlayer import N_GENOME_BITS
 
-mutation_rate = 0.005
-population = 15  // 3 * 3 #multiple of 3
-field_size = 15
+mutation_rate = 0.003
+population = 15 // 3 * 3  # multiple of 3
+field_sizes = (15, 15, 15, 24)
 match_save_rate = 25
 
 halite_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'halite'))
@@ -24,6 +24,7 @@ log_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'l
 def mate(vec1, vec2):
     i = random.randrange(1, len(vec1) - 1)
     return vec1[:i] + vec2[i:]
+
 
 def mutate(vec):
     indices = sorted(i for i in range(len(vec)) if random.random() < mutation_rate)
@@ -39,12 +40,15 @@ def mutate(vec):
     # print(len(out))
     return out
 
+
 def rand_vec():
-    return bin(random.getrandbits(N_GENOME_BITS)).replace('0b','').rjust(N_GENOME_BITS, '0')
+    return bin(random.getrandbits(N_GENOME_BITS)).replace('0b', '').rjust(N_GENOME_BITS, '0')
+
 
 def save_genome(path, genome_str):
     with open(path, 'w') as f:
         f.write(genome_str)
+
 
 def genome_name(vec):
     return ''.join(vec[int(i)] for i in np.linspace(0, len(vec), 16+2)[1:-1])
@@ -55,6 +59,7 @@ def run_test(vec1, vec2, vec3, counter=0):
                 for vec in (vec1, vec2, vec3)]
     os.chdir(log_path)
     # print(programs[0].split()[:3])
+    field_size = random.choice(field_sizes)
     response = subprocess.run([halite_path, '-q', '-d', '%d %d' % (field_size, field_size)]
                               + programs,
                               stdout=subprocess.PIPE)
