@@ -4,6 +4,7 @@ import scala.util.Random
 object MyBot extends BotFactory {
   def main(args: Array[String]): Unit = {
     Runner.run("WhatWouldSimpkinsDo", this)
+    var grid = Env.readInit()
   }
 
   override def make(id: Int): Bot = new MyBot(id)
