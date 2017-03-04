@@ -4,6 +4,7 @@ object QBot extends BotFactory {
   var R = Array.ofDim[Int](900,900)
   def state(height: Int, x: Int, y:Int) = (height * x) + y
   def main(args: Array[String]): Unit = {
+    Runner.run("WhatWouldSimpkinsDo", this)
     var grid = Env.readInit()
     var height = grid.getHeight
     var width = grid.getWidth
@@ -23,14 +24,13 @@ object QBot extends BotFactory {
         if (up < 0) {
           up = height - 1
         }
-        //Array.tabulate(grid.getWidth, grid.getHeight)((x,y) => (-1))
-        /**R(state(height, site.location.x, site.location.y))(state(height, site.location.x, up)) = grid.getSite(site.location.x, up).location.production 
+        Array.tabulate(grid.getWidth, grid.getHeight)((x,y) => (-1))
+        R(state(height, site.location.x, site.location.y))(state(height, site.location.x, up)) = grid.getSite(site.location.x, up).location.production 
         R(state(height, site.location.x, site.location.y))(state(height, site.location.x, down)) = grid.getSite(site.location.x, down).location.production
         R(state(height, site.location.x, site.location.y))(state(height, left, site.location.y)) = grid.getSite(left, site.location.y).location.production
-        R(state(height, site.location.x, site.location.y))(state(height, right, site.location.y)) = grid.getSite(right, site.location.y).location.production**/
+        R(state(height, site.location.x, site.location.y))(state(height, right, site.location.y)) = grid.getSite(right, site.location.y).location.production
     }
-    //ql.getModel(R, 1000)
-    Runner.run("WhatWouldSimpkinsDo", this)
+    ql.getModel(R, 500)
   }
 
   

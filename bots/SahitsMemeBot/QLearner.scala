@@ -19,7 +19,7 @@ class QLearner() {
         var max_lookahead = 
           (for (value <- Q(action) if value > -1) yield {value}).reduceLeft(_ max _)
         Q(state)(action) = R(state)(action) + gamma * max_lookahead
-        if (iters == 100) {
+        if (iters == 50) {
           iterating = false;
         } else {
           iters = iters + 1;
