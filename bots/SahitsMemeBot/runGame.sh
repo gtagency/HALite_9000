@@ -2,4 +2,4 @@
 
 scalac *.scala
 
-./halite -d "30 30" "scala MyBot" "scala RandomBot"
+./halite -d "30 30" "scala MyBot" "scala QBot"

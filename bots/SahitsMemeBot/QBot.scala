@@ -2,9 +2,9 @@ import scala.util.Random
 object QBot extends BotFactory {
   var ql = new QLearner()
   var R = Array.ofDim[Int](900,900)
-  def state(height: Int, x: Int, y:Int) = (height * x) + y
+  def state(width: Int, x: Int, y:Int) = (width * x) + y
   def main(args: Array[String]): Unit = {
-    Runner.run("WhatWouldSimpkinsDo", this)
+    Runner.run("WWSD", this)
     var grid = Env.readInit()
     var height = grid.getHeight
     var width = grid.getWidth
@@ -25,12 +25,12 @@ object QBot extends BotFactory {
           up = height - 1
         }
         Array.tabulate(grid.getWidth, grid.getHeight)((x,y) => (-1))
-        R(state(height, site.location.x, site.location.y))(state(height, site.location.x, up)) = grid.getSite(site.location.x, up).location.production 
-        R(state(height, site.location.x, site.location.y))(state(height, site.location.x, down)) = grid.getSite(site.location.x, down).location.production
-        R(state(height, site.location.x, site.location.y))(state(height, left, site.location.y)) = grid.getSite(left, site.location.y).location.production
-        R(state(height, site.location.x, site.location.y))(state(height, right, site.location.y)) = grid.getSite(right, site.location.y).location.production
+        R(state(width, site.location.x, site.location.y))(state(height, site.location.x, up)) = grid.getSite(site.location.x, up).location.production 
+        R(state(width, site.location.x, site.location.y))(state(height, site.location.x, down)) = grid.getSite(site.location.x, down).location.production
+        R(state(width, site.location.x, site.location.y))(state(height, left, site.location.y)) = grid.getSite(left, site.location.y).location.production
+        R(state(width, site.location.x, site.location.y))(state(height, right, site.location.y)) = grid.getSite(right, site.location.y).location.production
     }
-    ql.getModel(R, 500)
+    ql.getModel(R, 700)
   }
 
   
@@ -38,15 +38,28 @@ object QBot extends BotFactory {
 }
 
 class QBot(myId: Int, ql: QLearner) extends Bot {
-  var Q = Array.ofDim[Int](30, 30)
-  var R = Array.ofDim[Int](30, 30)
+  var Q = Array.ofDim[Double](900, 900)
+  var R = Array.ofDim[Int](900, 900)
+  def state(width: Int, x: Int, y:Int) = (width * x) + y
   override def getMoves(grid: Grid): Iterable[Move] = {
     for {
-      site <- grid.getSites
+      site <- grid.getMine(myId)
     } yield {
-      
+      Q = ql.getModel
+      var newState = Q(state(grid.getWidth, site.location.x, site.location.y)).zipWithIndex.maxBy(_._1)._2
+      var x = (newState / grid.getWidth) - ((newState/grid.getWidth) % 1)
+      var y = newState - (x * grid.getWidth)
+      if (x < site.location.x) {
+        Move(site.location, new Direction(4))
+      } else if (x > site.location.x) {
+        Move(site.location, new Direction(2))
+      } else if (y < site.location.y) {
+        Move(site.location, new Direction(3))
+      } else {
+        Move(site.location, new Direction(1))
+      }
     }
-    var rand = Random
+    /**var rand = Random
     val moves = Array(0, 1, 4)
     for {
       site <- grid.getMine(myId)
@@ -62,6 +75,6 @@ class QBot(myId: Int, ql: QLearner) extends Bot {
       } else {
         Move(site.location, new Direction(moves(rand.nextInt(3))))
       }
-    }
+    }**/
   }
 }

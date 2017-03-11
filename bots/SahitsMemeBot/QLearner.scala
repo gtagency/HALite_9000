@@ -28,4 +28,7 @@ class QLearner() {
     }
     Q //scala is actually just dark dark magic
   }
+  def getModel(): Array[Array[Double]] = {
+    Q
+  }
 }
