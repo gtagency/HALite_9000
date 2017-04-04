@@ -2,8 +2,11 @@
 
 https://halite.io/
 
-### When matches are running, you can watch [here](http://ec2-54-145-204-41.compute-1.amazonaws.com:8080/lite/tournament/):
+### When matches are running, you can watch [here](http://ec2-54-145-204-41.compute-1.amazonaws.com:8080/lite/tournament/matches/):
 
-In-house tournament, Agency Spring 2017 project. 
+### Agency Spring 2017 project, In-house tournament. 
 
-Tournament code taken from [mini-halite](https://github.com/nmalaguti/mini-halite)
+The tournament is run through [mini-halite](https://github.com/nmalaguti/mini-halite)
+
+Club members have written bots to compete in this in-house competition. 
+
